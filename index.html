@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eFootball Oyuncu Draft Oyunu</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #f1c40f;
+            text-shadow: 2px 2px 4px #000;
+        }
+        .stadium {
+            background: radial-gradient(circle, #27ae60 40%, #1e824c 100%);
+            border: 5px solid white;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 0px 20px rgba(0,225,0,0.2);
+            position: relative;
+        }
+        .player-slot {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px dashed #f1c40f;
+            padding: 15px;
+            margin: 10px;
+            display: inline-block;
+            width: 120px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .player-slot:hover {
+            background: rgba(241, 196, 15, 0.2);
+            transform: scale(1.05);
+        }
+        .player-card {
+            background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);
+            color: black;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.5);
+        }
+        .btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.3);
+            margin-top: 15px;
+        }
+        .btn:hover {
+            background-color: #c0392b;
+        }
+        #selection-box {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #2c3e50;
+            padding: 20px;
+            border-radius: 15px;
+            border: 3px solid #f1c40f;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            z-index: 100;
+        }
+        .option-card {
+            display: inline-block;
+            background: linear-gradient(135deg, #2980b9, #2c3e50);
+            color: white;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 10px;
+            width: 110px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .option-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 99;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>eFootball Draft 2026</h1>
+    <p>Mevkilere tıkla ve rüya takımını kur!</p>
+
+    <div class="stadium">
+        <!-- Hücum -->
+        <div class="player-slot" onclick="openDraft('ST')">
+            <span id="ST">SANTRAFOR<br>(Seç)</span>
+        </div>
+        <br>
+        <!-- Orta Saha -->
+        <div class="player-slot" onclick="openDraft('LW')">
+            <span id="LW">SOL KANAT<br>(Seç)</span>
+        </div>
+        <div class="player-slot" onclick="openDraft('RW')">
+            <span id="RW">SAĞ KANAT<br>(Seç)</span>
+        </div>
+        <br>
+        <!-- Defans ve Kaleci -->
+        <div class="player-slot" onclick="openDraft('DEF')">
+            <span id="DEF">DEFANS<br>(Seç)</span>
+        </div>
+        <div class="player-slot" onclick="openDraft('GK')">
+            <span id="GK">KALECİ<br>(Seç)</span>
+        </div>
+    </div>
+
+    <button class="btn" onclick="resetDraft()">Kadroya Reset At</button>
+
+    <!-- Seçim Ekranı Pencereleri -->
+    <div id="overlay"></div>
+    <div id="selection-box">
+        <h3>Bir Oyuncu Seç!</h3>
+        <div id="options-container"></div>
+    </div>
+
+    <script>
+        // Oyuncu Havuzumuz (Galatasaray ve Dünya Yıldızları)
+        const playersPool = {
+            'ST': [
+                { name: 'Victor Osimhen', rating: 102 },
+                { name: 'Mauro Icardi', rating: 99 },
+                { name: 'Erling Haaland', rating: 101 }
+            ],
+            'LW': [
+                { name: 'Neymar Jr', rating: 106 },
+                { name: 'Vinicius Jr', rating: 100 },
+                { name: 'Barış Alper', rating: 95 }
+            ],
+            'RW': [
+                { name: 'Lionel Messi', rating: 104 },
+                { name: 'Mohamed Salah', rating: 99 },
+                { name: 'Hakim Ziyech', rating: 94 }
+            ],
+            'DEF': [
+                { name: 'Davinson Sanchez', rating: 96 },
+                { name: 'Virgil van Dijk', rating: 100 },
+                { name: 'Abdülkerim Bardakcı', rating: 94 }
+            ],
+            'GK': [
+                { name: 'Fernando Muslera', rating: 97 },
+                { name: 'Ederson', rating: 98 },
+                { name: 'Thibaut Courtois', rating: 99 }
+            ]
+        };
+
+        let currentSlot = '';
+
+        function openDraft(position) {
+            currentSlot = position;
+            const container = document.getElementById('options-container');
+            container.innerHTML = ''; // Eski seçenekleri temizle
+            
+            // Havuzdan o mevkinin oyuncularını çek
+            const options = playersPool[position];
+            
+            options.forEach(player => {
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                card.innerHTML = `${player.name}<br><span style="color:#f1c40f;">Gen: ${player.rating}</span>`;
+                card.onclick = () => selectPlayer(player.name, player.rating);
+                container.appendChild(card);
+            });
+
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('selection-box').style.display = 'block';
+        }
+
+        function selectPlayer(name, rating) {
+            const slot = document.getElementById(currentSlot);
+            slot.parentElement.innerHTML = `<div class="player-card">${name}<br><span style="font-size:12px; color:#121212;">GEN: ${rating}</span></div>`;
+            
+            closeDraft();
+        }
+
+        function closeDraft() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('selection-box').style.display = 'none';
+        }
+
+        function resetDraft() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
+
