@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eFootball Oyuncu Draft Oyunu</title>
+    <title>eFootball Ultra İlk 11 Draft Oyunu</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -16,197 +16,382 @@
         h1 {
             color: #f1c40f;
             text-shadow: 2px 2px 4px #000;
+            margin-bottom: 5px;
         }
-        .stadium {
-            background: radial-gradient(circle, #27ae60 40%, #1e824c 100%);
-            border: 5px solid white;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0px 0px 20px rgba(0,225,0,0.2);
-            position: relative;
-        }
-        .player-slot {
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px dashed #f1c40f;
+        .dashboard {
+            background: linear-gradient(135deg, #1e3799, #0c2461);
             padding: 15px;
-            margin: 10px;
+            border-radius: 15px;
             display: inline-block;
-            width: 120px;
+            margin-bottom: 20px;
+            border: 3px solid #f1c40f;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .dashboard h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .score-box {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4cd137;
+            text-shadow: 1px 1px 5px #000;
+        }
+        .pitch {
+            background-color: #27ae60;
+            background-image: linear-gradient(rgba(255,255,255,0.1) 50%, transparent 50%),
+                              linear-gradient(90deg, rgba(255,255,255,0.1) 50%, transparent 50%);
+            background-size: 100px 100px;
+            border: 5px solid white;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
             border-radius: 10px;
-            cursor: pointer;
-            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.6);
         }
-        .player-slot:hover {
-            background: rgba(241, 196, 15, 0.2);
-            transform: scale(1.05);
+        .squad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
         }
-        .player-card {
-            background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);
-            color: black;
-            font-weight: bold;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 8px rgba(0,0,0,0.5);
-        }
-        .btn {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 25px;
-            cursor: pointer;
-            box-shadow: 0px 4px 6px rgba(0,0,0,0.3);
+        /* Kaleci tam ortalansın diye özel ayar */
+        .gk-container {
+            grid-column: span 3;
+            display: flex;
+            justify-content: center;
             margin-top: 15px;
         }
-        .btn:hover {
-            background-color: #c0392b;
-        }
-        #selection-box {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #2c3e50;
-            padding: 20px;
-            border-radius: 15px;
-            border: 3px solid #f1c40f;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
-            z-index: 100;
-        }
-        .option-card {
-            display: inline-block;
-            background: linear-gradient(135deg, #2980b9, #2c3e50);
-            color: white;
-            padding: 15px;
-            margin: 10px;
+        .position-card {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px dashed #f1c40f;
             border-radius: 10px;
-            width: 110px;
+            padding: 10px;
+            min-height: 120px;
             cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .position-card:hover {
+            transform: scale(1.05);
+            background: rgba(0, 0, 0, 0.85);
+        }
+        .pos-title {
             font-weight: bold;
+            color: #f1c40f;
+            font-size: 14px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
         }
-        .option-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        .player-placeholder {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 20px;
         }
-        #overlay {
+        .chosen-player {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            color: black;
+            font-weight: bold;
+            border-radius: 8px;
+            padding: 5px;
+            border: 2px solid white;
+        }
+        .chosen-rating {
+            background: black;
+            color: #f1c40f;
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        /* Modal (Seçenekler Kutusu) */
+        .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 99;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #1e272e;
+            padding: 20px;
+            border-radius: 15px;
+            border: 3px solid #f1c40f;
+            max-width: 500px;
+            width: 90%;
+        }
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .option-btn {
+            background: linear-gradient(90deg, #3c6382, #0a3d62);
+            color: white;
+            border: 2px solid #f1c40f;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .option-btn:hover {
+            background: linear-gradient(90deg, #0a3d62, #3c6382);
+            box-shadow: 0 0 10px #f1c40f;
+        }
+        .opt-rating {
+            background: #f1c40f;
+            color: black;
+            padding: 2px 7px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .close-btn {
+            background: #cf000f;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-    <h1>eFootball Draft 2026</h1>
-    <p>Mevkilere tıkla ve rüya takımını kur!</p>
+    <h1>eFootball ULTRA DRAFT OYUNU</h1>
+    <p>Mevkilere tıkla, 5 çılgın seçenek arasından İlk 11'ini kur!</p>
 
-    <div class="stadium">
-        <!-- Hücum -->
-        <div class="player-slot" onclick="openDraft('ST')">
-            <span id="ST">SANTRAFOR<br>(Seç)</span>
-        </div>
-        <br>
-        <!-- Orta Saha -->
-        <div class="player-slot" onclick="openDraft('LW')">
-            <span id="LW">SOL KANAT<br>(Seç)</span>
-        </div>
-        <div class="player-slot" onclick="openDraft('RW')">
-            <span id="RW">SAĞ KANAT<br>(Seç)</span>
-        </div>
-        <br>
-        <!-- Defans ve Kaleci -->
-        <div class="player-slot" onclick="openDraft('DEF')">
-            <span id="DEF">DEFANS<br>(Seç)</span>
-        </div>
-        <div class="player-slot" onclick="openDraft('GK')">
-            <span id="GK">KALECİ<br>(Seç)</span>
+    <div class="dashboard">
+        <h2>KADRO GÜCÜ (REYTING)</h2>
+        <div class="score-box" id="team-rating">0</div>
+    </div>
+
+    <div class="pitch">
+        <div class="squad-grid">
+            
+            <div class="position-card" onclick="openDraft('lwf', 'Sol Kanat (LWF)')" id="lwf">
+                <div class="pos-title">LWF</div>
+                <div class="player-content"><div class="player-placeholder">Oyuncu Seç ➕</div></div>
+            </div>
+            <div class="position-card" onclick="openDraft('cf', 'Santrafor (CF)')" id="cf">
+                <div class="pos-title">CF</div>
+                <div class="player-content"><div class="player-placeholder">Oyuncu Seç ➕</div></div>
+            </div>
+            <div class="position-card" onclick="openDraft('rwf', 'Sağ Kanat (RWF)')" id="rwf">
+                <div class="pos-title">RWF</div>
+                <div class="player-content"><div class="player-placeholder">Oyuncu Seç ➕</div></div>
+            </div>
+
+            <div class="position-card" onclick="openDraft('cmf1', 'Orta Saha (CMF)')" id="cmf1">
+                <div class="pos-title">CMF</div>
+                <div class="player-content"><div class="player-placeholder">Oyuncu Seç ➕</div></div>
+            </div>
+            <div class="position-card" onclick="openDraft('amf', 'Ofansif Orta Saha (AMF)')" id="amf">
+                <div class="pos-title">AMF</div>
+                <div class="player-content"><div class="player-placeholder">Oyuncu Seç ➕</div></div>
+            </div>
+            <div class="position-card" onclick="openDraft('cmf2', 'Orta Saha (CMF)')" id="cmf2">
+                <div class="pos-title">CMF</div>
+                <div class="player-content"><div class="player-placeholder">Oyuncu Seç ➕</div></div>
+            </div>
+
+            <div class="position-card" onclick="openDraft('lb', 'Sol Bek (LB)')" id="lb">
+                <div class="pos-title">LB</div>
+                <div class="player-content"><div class="player-placeholder">Oyuncu Seç ➕</div></div>
+            </div>
+            <div class="position-card" onclick="openDraft('cb1', 'Stoper (CB)')" id="cb1">
+                <div class="pos-title">CB</div>
+                <div class="player-content"><div class="player-placeholder">Oyuncu Seç ➕</div></div>
+            </div>
+            <div class="position-card" onclick="openDraft('cb2', 'Stoper (CB)')" id="cb2">
+                <div class="pos-title">CB</div>
+                <div class="player-content"><div class="player-placeholder">Oyuncu Seç ➕</div></div>
+            </div>
+            <div class="position-card" onclick="openDraft('rb', 'Sağ Bek (RB)')" id="rb">
+                <div class="pos-title">RB</div>
+                <div class="player-content"><div class="player-placeholder">Oyuncu Seç ➕</div></div>
+            </div>
+
+            <div class="gk-container">
+                <div class="position-card" style="width: 31%;" onclick="openDraft('gk', 'Kaleci (GK)')" id="gk">
+                    <div class="pos-title">GK</div>
+                    <div class="player-content"><div class="player-placeholder">Oyuncu Seç ➕</div></div>
+                </div>
+            </div>
+
         </div>
     </div>
 
-    <button class="btn" onclick="resetDraft()">Kadroya Reset At</button>
-
-    <!-- Seçim Ekranı Pencereleri -->
-    <div id="overlay"></div>
-    <div id="selection-box">
-        <h3>Bir Oyuncu Seç!</h3>
-        <div id="options-container"></div>
+    <div class="modal" id="draft-modal">
+        <div class="modal-content">
+            <h3 id="modal-position-title" style="color: #f1c40f; margin-top:0;">Mevki Seçimi</h3>
+            <p>Aşağıdaki 5 şanslı seçenekten birini kadroya kat:</p>
+            <div class="options-container" id="options-box">
+                </div>
+            <button class="close-btn" onclick="closeModal()">Kapat</button>
+        </div>
     </div>
 
     <script>
-        // Oyuncu Havuzumuz (Galatasaray ve Dünya Yıldızları)
-        const playersPool = {
-            'ST': [
-                { name: 'Victor Osimhen', rating: 102 },
-                { name: 'Mauro Icardi', rating: 99 },
-                { name: 'Erling Haaland', rating: 101 }
+        // MEVKİLERE GÖRE 5'ER OYUNCU HAVUZU VE REYTINGLERİ
+        const playerPool = {
+            cf: [
+                { name: "Victor Osimhen", rating: 104 },
+                { name: "Mauro Icardi", rating: 102 },
+                { name: "Erling Haaland", rating: 101 },
+                { name: "Kylian Mbappé", rating: 103 },
+                { name: "Robert Lewandowski", rating: 98 }
             ],
-            'LW': [
-                { name: 'Neymar Jr', rating: 106 },
-                { name: 'Vinicius Jr', rating: 100 },
-                { name: 'Barış Alper', rating: 95 }
+            lwf: [
+                { name: "Neymar Jr (Epic)", rating: 106 },
+                { name: "Vinícius Júnior", rating: 101 },
+                { name: "Rafael Leão", rating: 97 },
+                { name: "Khvicha Kvaratskhelia", rating: 96 },
+                { name: "Barış Alper Yılmaz", rating: 95 }
             ],
-            'RW': [
-                { name: 'Lionel Messi', rating: 104 },
-                { name: 'Mohamed Salah', rating: 99 },
-                { name: 'Hakim Ziyech', rating: 94 }
+            rwf: [
+                { name: "Lionel Messi", rating: 105 },
+                { name: "Mohamed Salah", rating: 100 },
+                { name: "Bukayo Saka", rating: 98 },
+                { name: "Rodrygo", rating: 96 },
+                { name: "Hakim Ziyech", rating: 94 }
             ],
-            'DEF': [
-                { name: 'Davinson Sanchez', rating: 96 },
-                { name: 'Virgil van Dijk', rating: 100 },
-                { name: 'Abdülkerim Bardakcı', rating: 94 }
+            amf: [
+                { name: "Kevin De Bruyne", rating: 102 },
+                { name: "Jude Bellingham", rating: 101 },
+                { name: "Dries Mertens", rating: 95 },
+                { name: "Bruno Fernandes", rating: 98 },
+                { name: "Jamal Musiala", rating: 97 }
             ],
-            'GK': [
-                { name: 'Fernando Muslera', rating: 97 },
-                { name: 'Ederson', rating: 98 },
-                { name: 'Thibaut Courtois', rating: 99 }
+            cmf1: [
+                { name: "Lucas Torreira", rating: 97 },
+                { name: "Luka Modrić", rating: 99 },
+                { name: "Federico Valverde", rating: 98 },
+                { name: "Gabriel Sara", rating: 95 },
+                { name: "Pedri", rating: 96 }
+            ],
+            cmf2: [
+                { name: "Rodri", rating: 102 },
+                { name: "Toni Kroos", rating: 98 },
+                { name: "Declan Rice", rating: 97 },
+                { name: "Kerem Demirbay", rating: 93 },
+                { name: "Frenkie de Jong", rating: 96 }
+            ],
+            lb: [
+                { name: "Ferdi Kadıoğlu", rating: 94 },
+                { name: "Alphonso Davies", rating: 97 },
+                { name: "Theo Hernández", rating: 98 },
+                { name: "Ismail Jakobs", rating: 92 },
+                { name: "Federico Dimarco", rating: 95 }
+            ],
+            rb: [
+                { name: "Achraf Hakimi", rating: 98 },
+                { name: "Trent Alexander-Arnold", rating: 97 },
+                { name: "Kyle Walker", rating: 96 },
+                { name: "Elias Jelert", rating: 91 },
+                { name: "Dani Carvajal", rating: 95 }
+            ],
+            cb1: [
+                { name: "Davinson Sánchez", rating: 96 },
+                { name: "Virgil van Dijk", rating: 101 },
+                { name: "Rúben Dias", rating: 99 },
+                { name: "Victor Nelsson", rating: 93 },
+                { name: "Antonio Rüdiger", rating: 98 }
+            ],
+            cb2: [
+                { name: "Abdülkerim Bardakcı", rating: 94 },
+                { name: "William Saliba", rating: 98 },
+                { name: "Marquinhos", rating: 97 },
+                { name: "Ronald Araújo", rating: 96 },
+                { name: "Éder Militão", rating: 95 }
+            ],
+            gk: [
+                { name: "Fernando Muslera", rating: 96 },
+                { name: "Thibaut Courtois", rating: 100 },
+                { name: "Ederson", rating: 97 },
+                { name: "Alisson Becker", rating: 98 },
+                { name: "Marc-André ter Stegen", rating: 96 }
             ]
         };
 
-        let currentSlot = '';
+        let selectedRatings = {};
+        let currentActivePosition = '';
 
-        function openDraft(position) {
-            currentSlot = position;
-            const container = document.getElementById('options-container');
-            container.innerHTML = ''; // Eski seçenekleri temizle
+        function openDraft(posId, posName) {
+            currentActivePosition = posId;
+            document.getElementById('modal-position-title').innerText = posName;
             
-            // Havuzdan o mevkinin oyuncularını çek
-            const options = playersPool[position];
+            const optionsBox = document.getElementById('options-box');
+            optionsBox.innerHTML = ''; // Eski butonları temizle
+
+            // 5 ADET SEÇENEĞİ GETİR
+            const options = playerPool[posId];
             
             options.forEach(player => {
-                const card = document.createElement('div');
-                card.className = 'option-card';
-                card.innerHTML = `${player.name}<br><span style="color:#f1c40f;">Gen: ${player.rating}</span>`;
-                card.onclick = () => selectPlayer(player.name, player.rating);
-                container.appendChild(card);
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span>${player.name}</span> <span class="opt-rating">${player.rating}</span>`;
+                btn.onclick = function() {
+                    selectPlayer(posId, player.name, player.rating);
+                };
+                optionsBox.appendChild(btn);
             });
 
-            document.getElementById('overlay').style.display = 'block';
-            document.getElementById('selection-box').style.display = 'block';
+            document.getElementById('draft-modal').style.display = 'flex';
         }
 
-        function selectPlayer(name, rating) {
-            const slot = document.getElementById(currentSlot);
-            slot.parentElement.innerHTML = `<div class="player-card">${name}<br><span style="font-size:12px; color:#121212;">GEN: ${rating}</span></div>`;
+        function selectPlayer(posId, name, rating) {
+            // Kartı güncelle
+            const card = document.getElementById(posId);
+            const contentDiv = card.querySelector('.player-content');
             
-            closeDraft();
+            contentDiv.innerHTML = `
+                <div class="chosen-player">${name}</div>
+                <div class="chosen-rating">${rating}</div>
+            `;
+            
+            card.style.border = "2px solid #4cd137";
+
+            // Reytingi kaydet ve takım gücünü hesapla
+            selectedRatings[posId] = rating;
+            calculateTeamRating();
+            
+            closeModal();
         }
 
-        function closeDraft() {
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('selection-box').style.display = 'none';
+        function calculateTeamRating() {
+            let total = 0;
+            let count = 0;
+            
+            for (let key in selectedRatings) {
+                total += selectedRatings[key];
+                count++;
+            }
+            
+            // Ortalama takım reytingini hesapla
+            let average = count > 0 ? Math.round(total / count) : 0;
+            
+            // Eğer 11 oyuncu da seçildiyse takım ruhu bonusu ekle!
+            if (count === 11) {
+                average += 5; // İlk 11 tamamlandığı için ekstra +5 güç!
+            }
+
+            document.getElementById('team-rating').innerText = average;
         }
 
-        function resetDraft() {
-            location.reload();
+        function closeModal() {
+            document.getElementById('draft-modal').style.display = 'none';
         }
     </script>
 </body>
 </html>
+
 
