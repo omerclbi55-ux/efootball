@@ -1,9 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
-<title>E-Futbol</title>
+    <meta charset="UTF-8">
+    <title>eFootball Ultra Draft</title>
+    <style>
+        body { background-color: #121212; color: white; text-align: center; font-family: sans-serif; padding: 20px; }
+        .box { border: 2px solid #f1c40f; padding: 20px; margin: 10px; border-radius: 10px; display: inline-block; width: 80%; }
+        .oyuncu-btn { display: block; width: 90%; margin: 5px auto; padding: 10px; background: #222; border: 1px solid #f1c40f; color: white; cursor: pointer; }
+        .kadro-kutusu { margin-top: 20px; padding: 15px; border: 2px dashed #00ff00; }
+    </style>
 </head>
 <body>
-<h1>Oyun Calisiyor!</h1>
+
+    <h1>eFootball Ultra Draft</h1>
+
+    <div class="box">
+        <h3>Teknik Direktör:</h3>
+        <select id="td-secim"><option>Okan Buruk</option><option>Jose Mourinho</option><option>Fatih Terim</option></select>
+    </div>
+
+    <div class="box">
+        <h3>Paketi Aç ve Yıldızını Seç!</h3>
+        <button onclick="draftYap()">Yeni 5'li Paketi Getir ⚽</button>
+        <div id="oyuncu-listesi"></div>
+    </div>
+
+    <div class="box kadro-kutusu">
+        <h3>Senin Kadron:</h3>
+        <ul id="kadro-listesi"></ul>
+    </div>
+
+    <script>
+        const tumOyuncular = ["Erling Haaland", "Kylian Mbappé", "Vinícius Júnior", "Harry Kane", "Lionel Messi", "Mohamed Salah", "Kevin De Bruyne", "Jude Bellingham", "Rodri", "Lautaro Martínez", "Victor Osimhen", "Mauro Icardi", "Barış Alper Yılmaz", "Neymar Jr", "Adriano"]; // 200 kişilik listeyi buraya aynen yapıştırabilirsin
+        
+        function draftYap() {
+            let liste = document.getElementById("oyuncu-listesi");
+            liste.innerHTML = ""; 
+            for(let i=0; i<5; i++) {
+                let p = tumOyuncular[Math.floor(Math.random() * tumOyuncular.length)];
+                let btn = document.createElement("button");
+                btn.className = "oyuncu-btn";
+                btn.innerHTML = p;
+                btn.onclick = function() { 
+                    let kadro = document.getElementById("kadro-listesi");
+                    let li = document.createElement("li");
+                    li.innerHTML = p;
+                    kadro.appendChild(li);
+                    liste.innerHTML = ""; // Seçince paketi kapat
+                };
+                liste.appendChild(btn);
+            }
+        }
+    </script>
 </body>
 </html>
